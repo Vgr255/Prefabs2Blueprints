@@ -34,7 +34,7 @@ def main():
         config.NEW_NAME = config.NAME
     if not config.OWNER:
         config.OWNER = 0
-    if config.OWNER == 0
+    if config.OWNER == 0:
         config.SHARING = "None"
     if config.SHARING not in ("None", "All"):
         config.SHARING = "None"
