@@ -17,6 +17,8 @@ retcodes = {
 5: "Error: Already a blueprint.",
 6: "Error: No prefab was found.",
 7: "Error: Could not read file.",
+8: "Error: {0} is not a folder.".format(config.BATCH_PATH),
+9: "All prefabs converted successfully.",
 }
 
 def main():
@@ -28,7 +30,7 @@ def main():
 
     if not config.DISPLAY_NAME:
         config.DISPLAY_NAME = "Nobody"
-    if not config.NAME:
+    if not config.NAME and not config.BATCH_PATH:
         return 2
     if not config.NEW_NAME:
         config.NEW_NAME = config.NAME
@@ -38,40 +40,80 @@ def main():
         config.SHARING = "None"
     if config.SHARING not in ("None", "All"):
         config.SHARING = "None"
+    if not os.path.isdir(config.BATCH_PATH):
+        return 8
+    if config.BATCH_PATH:
+        config.BATCH_PATH = config.BATCH_PATH.replace("/", "\\")
+        if not config.BATCH_PATH[-1:] == "\\":
+            config.BATCH_PATH += "\\"
 
     oldpath = None
 
-    for folder in os.listdir(path):
-        if folder.lower() == config.NAME.lower() and os.path.isdir(path + folder):
-            oldpath = path + folder + "\\"
+    if not config.BATCH_PATH:
+        for folder in os.listdir(path):
+            if folder.lower() == config.NAME.lower() and os.path.isdir(path + folder):
+                oldpath = path + folder + "\\"
 
-    if not oldpath:
-        return 3
+        if not oldpath:
+            return 3
 
-    prefab = None
+        if len(os.listdir(oldpath)) > 1:
+            return 4
 
-    if len(os.listdir(oldpath)) > 1:
-        return 4
+        prefab = None
 
-    for file in os.listdir(oldpath):
-        if file[-4:] == ".sbc":
-            prefab = file
-            break
+        for file in os.listdir(oldpath):
+            if file[-4:] == ".sbc":
+                prefab = file
+                break
 
-    if prefab == "bp.sbc":
-        return 5
+        if prefab == "bp.sbc":
+            return 5
 
-    if not prefab:
-        return 6
+        if not prefab:
+            return 6
 
-    old = open(oldpath + prefab, "r")
-    new = open(oldpath + "bp.sbc", "w")
+        old = open(oldpath + prefab, "r")
+        new = open(oldpath + "bp.sbc", "w")
 
-    oldlines = old.readlines()
-    if not oldlines:
-        return 7
+        oldlines = old.readlines()
+        if not oldlines:
+            return 7
 
-    print("Converting Prefab to Blueprint . . .")
+        old.close()
+
+        do(new, oldlines, oldpath, path, prefab, "single")
+
+        return 0
+
+    else:
+        files = []
+        for file in os.listdir(config.BATCH_PATH):
+            if file[-4:] == ".sbc":
+                files.append(file)
+
+        for reader in files:
+            if not os.path.exists(path + config.PREPEND + reader[:-4] + config.APPEND):
+                os.mkdir(path + config.PREPEND + reader[:-4] + config.APPEND)
+            old = open(config.BATCH_PATH + reader, "r")
+            new = open(path + config.PREPEND + reader[:-4] + config.APPEND + "\\bp.sbc", "w")
+
+            oldlines = old.readlines()
+            if not oldlines:
+                continue
+
+            old.close()
+
+            do(new, oldlines, None, None, reader, "multiple")
+
+        return 9
+
+def do(new, oldlines, oldpath, path, prefab, type):
+
+    if type == "single":
+        print("Converting Prefab to Blueprint . . .")
+    else:
+        print("Converting Prefab '{0}' to Blueprint . . .".format(prefab))
 
     new.write(oldlines.pop(0) + oldlines.pop(0))
     new.write("  <ShipBlueprints>\n    <ShipBlueprint>\n")
@@ -104,13 +146,11 @@ def main():
     new.write("      <WorkshopId>0</WorkshopId>\n      <OwnerSteamId>{0}</OwnerSteamId>\n".format(str(config.OWNER)))
     new.write("    </ShipBlueprint>\n  </ShipBlueprints>\n</Definitions>")
 
-    old.close()
     new.close()
 
-    os.rename(oldpath, path + config.NEW_NAME)
-    os.remove(path + config.NEW_NAME + "\\" + prefab)
-
-    return 0
+    if type == "single":
+        os.rename(oldpath, path + config.NEW_NAME)
+        os.remove(path + config.NEW_NAME + "\\" + prefab)
 
 if __name__ == "__main__":
     print(retcodes[main()])

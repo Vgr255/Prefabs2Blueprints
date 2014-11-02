@@ -4,9 +4,28 @@ DISPLAY_NAME = ""
 
 # Prefab in C:/Users/<YourName>/AppData/Roaming/SpaceEngineers/Blueprints/local/<Name>
 
+# Those two settings here are for the one-by-one conversion
+# For batch conversion, see below
+
 NAME = "" # Name of the folder
 
 NEW_NAME = "" # Name of the new folder. Leave blank to keep the same
+
+# These settings are for batch conversion of multiple prefabs
+# Using this will take significantly more time to complete
+
+# This folder contains all the prefabs to convert
+# They will be put in a folder equal to their filename
+
+BATCH_PATH = "" # Use only forward slashes in the path
+
+# The program will prepend this when creating the folder in batch mode
+
+PREPEND = ""
+
+# The program will append this when creating the folder in batch mode
+
+APPEND = ""
 
 # This determines whether or not dampeners should be enabled
 

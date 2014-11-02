@@ -12,12 +12,27 @@ If you're confused, [just download and install Python][0] and [download the code
 
 ### Using the code
 
+Single file:
+
 1. Browse to `C:/Users/<YourName>/AppData/Roaming/SpaceEngineers/Blueprints/local`.
 2. Create a new folder in there. Name it however you like.
 3. Put in that folder the `.sbc` prefab file you want to convert.
-4. Browse where you downloaded the code, and open `config.py` with any text editor.
-5. Edit `NAME` to the name of the folder you created in step 2.
-6. You may edit any other setting to your liking.
+4. Browse where you downloaded the code.
+5. Copy or rename `config.py.example` to `config.py`.
+6. Open `config.py` with any text editor.
+7. Edit `NAME` to the name of the folder you created in step 2.
+8. You may edit any other setting to your liking.
+
+Multiple files:
+
+1. Create a new folder anywhere you like.
+2. Put all the `.sbc` prefabs that you want to convert in that folder.
+3. Browse where you downloaded the code.
+4. Copy or rename `config.py.example` to `config.py`.
+5. Open `config.py` with any text editor.
+6. Edit `BATCH_PATH` to the full path of the folder you created in step 1.
+7. Use only forward slashes `/` or double-backward slashes `\\` in the path.
+8. The name of the `.sbc` files will be the folders' names.
 
 When you're done editing your settings, save `config.py` and double-click on `converter.py`.
 Wait a bit and it should complete without problem.
