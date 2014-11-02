@@ -33,8 +33,8 @@ def main():
     if not config.NEW_NAME:
         config.NEW_NAME = config.NAME
     if not config.OWNER:
-        config.OWNER = 76561198050103334 # '76561198050103334' is Nobody
-    if config.OWNER == 76561198050103334:
+        config.OWNER = 0
+    if config.OWNER == 0
         config.SHARING = "None"
     if config.SHARING not in ("None", "All"):
         config.SHARING = "None"
