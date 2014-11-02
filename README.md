@@ -33,6 +33,7 @@ Multiple files:
 6. Edit `BATCH_PATH` to the full path of the folder you created in step 1.
 7. Use only forward slashes `/` or double-backward slashes `\\` in the path.
 8. The name of the `.sbc` files will be the folders' names.
+9. You can add something to `APPEND` and `PREPEND`, P2B will respectively append or prepend those to the path.
 
 When you're done editing your settings, save `config.py` and double-click on `converter.py`.
 Wait a bit and it should complete without problem.
