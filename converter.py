@@ -32,6 +32,12 @@ def main():
         return 2
     if not config.NEW_NAME:
         config.NEW_NAME = config.NAME
+    if not config.OWNER:
+        config.OWNER = 76561198050103334 # '76561198050103334' is Nobody
+    if config.OWNER == 76561198050103334:
+        config.SHARING = "None"
+    if config.SHARING not in ("None", "All"):
+        config.SHARING = "None"
 
     oldpath = None
 
@@ -65,6 +71,8 @@ def main():
     if not oldlines:
         return 7
 
+    print("Converting Prefab to Blueprint . . .")
+
     new.write(oldlines.pop(0) + oldlines.pop(0))
     new.write("  <ShipBlueprints>\n    <ShipBlueprint>\n")
 
@@ -78,9 +86,12 @@ def main():
     new.write(oldlines.pop(0))
     new.write("      <DisplayName>{0}</DisplayName>\n".format(config.DISPLAY_NAME))
 
+    if oldlines[0][:18] == "      <RespawnShip>" and oldlines[0][-15:] == "</RespawnShip>\n":
+        del oldlines[0]
+
     while oldlines[:-3]:
-        if oldlines[0] == "              <ShareMode>All</ShareMode>\n":
-            oldlines[0] = "              <ShareMode>None</ShareMode>\n"
+        if oldlines[0][:25] == "              <ShareMode>" and oldlines[0][-13:] == "</ShareMode>\n":
+            oldlines[0] = "              <ShareMode>{0}</ShareMode>\n".format(config.SHARING)
         if oldlines[0] == "              <PilotRelativeWorld>\n":
             del oldlines[:4]
             oldlines[0] = "              <PilotRelativeWorld xsi:nil=\"true\" />\n"
@@ -90,7 +101,7 @@ def main():
             new.write("              <Sections />\n")
         new.write(oldlines.pop(0))
 
-    new.write("      <WorkshopId>0</WorkshopId>\n      <OwnerSteamId>76561198050103334</OwnerSteamId>\n") # '76561198050103334' is Nobody
+    new.write("      <WorkshopId>0</WorkshopId>\n      <OwnerSteamId>{0}</OwnerSteamId>\n".format(str(config.OWNER)))
     new.write("    </ShipBlueprint>\n  </ShipBlueprints>\n</Definitions>")
 
     old.close()
