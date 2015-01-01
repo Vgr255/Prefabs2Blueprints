@@ -1,30 +1,32 @@
-# Prefabs2Blueprints by Vgr v0.1
+# Prefabs2Blueprints by Vgr v0.3
 # Converts a Space Engineers prefab to a blueprint
 # Big thanks to Keen Software House
 # P2B does not have any copyright, feel free to re-use and modify
 # Please give credit to the original author
+# v0.1 - First release
+# v0.2 - Batch mode added
+# v0.3 - Backwards compatibility with Python 2 - not yet tested
 
 import getpass
 import config
 import os
 
-retcodes = {
-0: "Prefab convertion completed successfully.",
-1: "Error: You cannot name your prefab 'bp.sbc'.",
-2: "Error: NAME is not defined in config.",
-3: "Error: {0} is not a folder.".format(config.NAME),
-4: "Error: Too many files in {0}.".format(config.NAME),
-5: "Error: Already a blueprint.",
-6: "Error: No prefab was found.",
-7: "Error: Could not read file.",
-8: "Error: {0} is not a folder.".format(config.BATCH_PATH),
-9: "All prefabs converted successfully.",
-}
+path = "C:/Users/%s/AppData/Roaming/SpaceEngineers/Blueprints/local/" % getpass.getuser()
+
+retcodes = [
+"Prefab convertion completed successfully.",
+"Error: You cannot name your prefab 'bp.sbc'.",
+"Error: NAME is not defined in config.",
+"Error: %s is not a folder." % config.NAME,
+"Error: Too many files in %s." % config.NAME,
+"Error: Already a blueprint.",
+"Error: No prefab was found.",
+"Error: Could not read file.",
+"Error: %s is not a folder." % config.BATCH_PATH,
+"All prefabs converted successfully.",
+]
 
 def main():
-
-    path = "C:\\Users\\{0}\\AppData\\Roaming\\SpaceEngineers\\Blueprints\\local\\".format(getpass.getuser())
-
     if config.NAME.lower() == "bp.sbc":
         return 1
 
@@ -73,16 +75,12 @@ def main():
         if not prefab:
             return 6
 
-        old = open(oldpath + prefab, "r")
-        new = open(oldpath + "bp.sbc", "w")
+        with open(oldpath + prefab) as old:
+            oldlines = old.readlines()
+            if not oldlines:
+                return 7
 
-        oldlines = old.readlines()
-        if not oldlines:
-            return 7
-
-        old.close()
-
-        do(new, oldlines, oldpath, path, prefab, "single")
+        do(oldpath + "bp.sbc" , oldlines, oldpath, path, prefab, "single")
 
         return 0
 
@@ -95,58 +93,53 @@ def main():
         for reader in files:
             if not os.path.exists(path + config.PREPEND + reader[:-4] + config.APPEND):
                 os.mkdir(path + config.PREPEND + reader[:-4] + config.APPEND)
-            old = open(config.BATCH_PATH + reader, "r")
-            new = open(path + config.PREPEND + reader[:-4] + config.APPEND + "\\bp.sbc", "w")
+            with open(config.BATCH_PATH + reader) as old:
+                oldlines = old.readlines()
+                if not oldlines:
+                    continue
 
-            oldlines = old.readlines()
-            if not oldlines:
-                continue
-
-            old.close()
-
-            do(new, oldlines, None, None, reader, "multiple")
+            do(path+config.PREPEND+reader[:-4]+config.APPEND+"\\bp.sbc", oldlines, None, None, reader, "multiple")
 
         return 9
 
-def do(new, oldlines, oldpath, path, prefab, type):
+def do(file, oldlines, oldpath, path, prefab, type):
 
     if type == "single":
         print("Converting Prefab to Blueprint . . .")
     else:
-        print("Converting Prefab '{0}' to Blueprint . . .".format(prefab))
+        print("Converting Prefab '%s' to Blueprint . . ." % prefab)
 
-    new.write(oldlines.pop(0) + oldlines.pop(0))
-    new.write("  <ShipBlueprints>\n    <ShipBlueprint>\n")
-
-    oldlines = oldlines[2:]
-    new.write(oldlines.pop(0))
-
-    new.write("        <TypeId>MyObjectBuilder_ShipBlueprintDefinition</TypeId>\n")
-    new.write("        <SubtypeId>{0}</SubtypeId>\n".format(config.NEW_NAME))
-
-    oldlines = oldlines[2:]
-    new.write(oldlines.pop(0))
-    new.write("      <DisplayName>{0}</DisplayName>\n".format(config.DISPLAY_NAME))
-
-    if oldlines[0][:18] == "      <RespawnShip>" and oldlines[0][-15:] == "</RespawnShip>\n":
-        del oldlines[0]
-
-    while oldlines[:-3]:
-        if oldlines[0][:25] == "              <ShareMode>" and oldlines[0][-13:] == "</ShareMode>\n":
-            oldlines[0] = "              <ShareMode>{0}</ShareMode>\n".format(config.SHARING)
-        if oldlines[0] == "              <PilotRelativeWorld>\n":
-            del oldlines[:4]
-            oldlines[0] = "              <PilotRelativeWorld xsi:nil=\"true\" />\n"
-        if oldlines[0] == "          <ConveyorLines>\n":
-            new.write("          <DampenersEnabled>{0}</DampenersEnabled>\n".format("true" if config.DAMPENERS else "false"))
-        if oldlines[0][:32] == "              <ConveyorLineType>" and oldlines[0][-20:] == "</ConveyorLineType>\n":
-            new.write("              <Sections />\n")
+    with open(file, "w") as new:
+        new.write(oldlines.pop(0) + oldlines.pop(0))
+        new.write("  <ShipBlueprints>\n    <ShipBlueprint>\n")
+    
+        oldlines = oldlines[2:]
         new.write(oldlines.pop(0))
+    
+        new.write("        <TypeId>MyObjectBuilder_ShipBlueprintDefinition</TypeId>\n")
+        new.write("        <SubtypeId>%s</SubtypeId>\n" % config.NEW_NAME)
+    
+        oldlines = oldlines[2:]
+        new.write(oldlines.pop(0))
+        new.write("      <DisplayName>%s</DisplayName>\n" % config.DISPLAY_NAME)
+    
+        if oldlines[0][:18] == "      <RespawnShip>" and oldlines[0][-15:] == "</RespawnShip>\n":
+            del oldlines[0]
 
-    new.write("      <WorkshopId>0</WorkshopId>\n      <OwnerSteamId>{0}</OwnerSteamId>\n".format(str(config.OWNER)))
-    new.write("    </ShipBlueprint>\n  </ShipBlueprints>\n</Definitions>")
-
-    new.close()
+        while oldlines[:-3]:
+            if oldlines[0][:25] == "              <ShareMode>" and oldlines[0][-13:] == "</ShareMode>\n":
+                oldlines[0] = "              <ShareMode>%s</ShareMode>\n" % config.SHARING
+            if oldlines[0] == "              <PilotRelativeWorld>\n":
+                del oldlines[:4]
+                oldlines[0] = "              <PilotRelativeWorld xsi:nil=\"true\" />\n"
+            if oldlines[0] == "          <ConveyorLines>\n":
+                new.write("          <DampenersEnabled>%s</DampenersEnabled>\n" % "true" if config.DAMPENERS else "false")
+            if oldlines[0][:32] == "              <ConveyorLineType>" and oldlines[0][-20:] == "</ConveyorLineType>\n":
+                new.write("              <Sections />\n")
+            new.write(oldlines.pop(0))
+    
+        new.write("      <WorkshopId>0</WorkshopId>\n      <OwnerSteamId>%s</OwnerSteamId>\n" % str(config.OWNER))
+        new.write("    </ShipBlueprint>\n  </ShipBlueprints>\n</Definitions>")
 
     if type == "single":
         os.rename(oldpath, path + config.NEW_NAME)
