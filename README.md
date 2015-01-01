@@ -41,8 +41,11 @@ Wait a bit and it should complete without problem.
 Please report any issue using the [GitHub issue tracker][4].
 
 Changelog:
+
 0.1 - First version
+
 0.2 - Batch mode, pretty much final release
+
 0.3 - Backwards compatibility
 
 [0]: https://www.python.org/ftp/python/3.4.2/python-3.4.2.msi
