@@ -50,7 +50,7 @@ Changelog:
 
 0.4 - Add proper UTF-8 handling, and properly handle nonsense
 
-[0]: https://www.python.org/ftp/python/3.5.0/python-3.5.0.msi
+[0]: https://www.python.org/ftp/python/3.5.0/python-3.5.0.exe
 [1]: http://git-scm.com/download/win
 [2]: github-windows://openRepo/https://github.com/Vgr255/Prefabs2Blueprints
 [3]: https://github.com/Vgr255/Prefabs2Blueprints/archive/master.zip
