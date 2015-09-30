@@ -93,10 +93,14 @@ def main():
         for reader in files:
             if not os.path.exists(path + config.PREPEND + reader[:-4] + config.APPEND):
                 os.mkdir(path + config.PREPEND + reader[:-4] + config.APPEND)
-            with open(config.BATCH_PATH + reader) as old:
-                oldlines = old.readlines()
-                if not oldlines:
-                    continue
+            try:
+                with open(config.BATCH_PATH + reader, "r", encoding="utf-8") as old:
+                    oldlines = old.readlines()
+                    if not oldlines:
+                        continue
+
+            except UnicodeDecodeError: # file is probably garbage
+                continue
 
             do(path+config.PREPEND+reader[:-4]+config.APPEND+"\\bp.sbc", oldlines, None, None, reader, "multiple")
 
@@ -110,7 +114,7 @@ def do(file, oldlines, oldpath, path, prefab, type):
         print("Converting Prefab '%s' to Blueprint . . ." % prefab)
 
     try:
-        with open(file, "w") as new:
+        with open(file, "w", encoding="utf-8") as new:
             new.write(oldlines.pop(0) + oldlines.pop(0))
             new.write("  <ShipBlueprints>\n    <ShipBlueprint>\n")
         
